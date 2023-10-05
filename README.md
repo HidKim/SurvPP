@@ -1,5 +1,5 @@
 # Python Code for Survival Permanental Process 
-This library provides survival permanental process (SurvPP) implemented in Tensorflow APP provides a scalable Bayesian framework for estimating point process intensity *as a function of covariates*, with the assumption that covariates are given at every point in the observation domain. For details, see our NeurIPS2022 paper [1].
+This library provides survival permanental process (SurvPP) implemented in Tensorflow. APP provides a scalable Bayesian framework for estimating point process intensity *as a function of covariates*, with the assumption that covariates are given at every point in the observation domain. For details, see our NeurIPS2022 paper [1].
 
 The code was tested on Python 3.7.2, Tensorflow 2.2.0, and qmcpy 1.3.
 
