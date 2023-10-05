@@ -1,12 +1,12 @@
 # Python Code for Survival Permanental Process 
-This library provides survival permanental process (SurvPP) implemented in Tensorflow. APP provides a scalable Bayesian framework for estimating point process intensity *as a function of covariates*, with the assumption that covariates are given at every point in the observation domain. For details, see our NeurIPS2022 paper [1].
+This library provides survival permanental process (SurvPP) implemented in Tensorflow. SurvPP provides a scalable Bayesian framework for survival analysis with time-varying covariates. For details, see our NeurIPS2023 paper [1].
 
-The code was tested on Python 3.7.2, Tensorflow 2.2.0, and qmcpy 1.3.
+The code was tested on Python 3.10.8, tensorflow-deps 2.10.0, tensorflow-macos 2.10.0, and tensorflow-metal 0.6.0.
 
 # Installation
 To install latest version:
 ```
-pip install git+https://github.com/HidKim/APP
+pip install git+https://github.com/HidKim/SurvPP
 ```
 
 # Basic Usage
@@ -59,13 +59,13 @@ r_est = model.predict(y, conf_int=[0.025,0.5,0.975])
   >The predicted values of intensity at the specified points.
 
 # Reference
-1. Hideaki Kim, Taichi Asami, and Hiroyuki Toda. "Fast Bayesian Estimation of Point Process Intensity as Function of Covariates", *Advances in Neural Information Processing Systems 35*, 2022.
+1. Hideaki Kim. "Survival Permanental Processes for Survival Analysis with Time-Varying Covariates", *Advances in Neural Information Processing Systems 36*, 2023.
 ```
-@inproceedings{kim2022fastbayesian,
-  title={Fast {B}ayesian Estimation of Point Process Intensity as Function of Covariates},
-  author={Kim, Hideaki and Asami, Taichi and Toda, Hiroyuki},
-  booktitle={Advances in Neural Information Processing Systems 35},
-  year={2022}
+@inproceedings{kim2023survival,
+  title={Survival Permanental Processes for Survival Analysis with Time-Varying Covariates},
+  author={Kim, Hideaki},
+  booktitle={Advances in Neural Information Processing Systems 36},
+  year={2023}
 }
 ``` 
 
@@ -73,4 +73,4 @@ r_est = model.predict(y, conf_int=[0.025,0.5,0.975])
 Released under "SOFTWARE LICENSE AGREEMENT FOR EVALUATION". Be sure to read it.
 
 # Contact
-Feel free to contact the first author Hideaki Kim (hideaki.kin.cn@hco.ntt.co.jp).
+Feel free to contact the first author Hideaki Kim (hideaki.kin@ntt.com).
