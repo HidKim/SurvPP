@@ -12,11 +12,11 @@ pip install git+https://github.com/HidKim/SurvPP
 # Basic Usage
 Import APP class:
 ```
-from HidKim_APP import augmented_permanental_process as APP
+from HidKim_SurvPP import survival_permanental_process as SurvPP
 ```
-Initialize APP:
+Initialize SurvPP:
 ```
-model = APP(kernel='Gaussian', eq_kernel='RFM',  
+model = SurvPP(kernel='Gaussian', eq_kernel='RFM',  
             eq_kernel_options={'cov_sampler':'Sobol','n_cov':2**11,'n_dp':500,'n_rfm':500})
 ```
 - `kernel`: *string, default='Gaussian'* <br> 
@@ -73,4 +73,4 @@ r_est = model.predict(y, conf_int=[0.025,0.5,0.975])
 Released under "SOFTWARE LICENSE AGREEMENT FOR EVALUATION". Be sure to read it.
 
 # Contact
-Feel free to contact the first author Hideaki Kim (hideaki.kin@ntt.com).
+Feel free to contact the author Hideaki Kim (hideaki.kin@ntt.com).
