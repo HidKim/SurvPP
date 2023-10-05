@@ -10,7 +10,7 @@ pip install git+https://github.com/HidKim/SurvPP
 ```
 
 # Basic Usage
-Import APP class:
+Import SurvPP class:
 ```
 from HidKim_SurvPP import survival_permanental_process as SurvPP
 ```
