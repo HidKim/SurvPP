@@ -17,26 +17,23 @@ from HidKim_SurvPP import survival_permanental_process as SurvPP
 Initialize SurvPP:
 ```
 model = SurvPP(kernel='Gaussian', eq_kernel='RFM',  
-            eq_kernel_options={'cov_sampler':'Sobol','n_cov':2**11,'n_dp':500,'n_rfm':500})
+            eq_kernel_options={'n_rfm':500})
 ```
 - `kernel`: *string, default='Gaussian'* <br> 
   >The kernel function for Gaussian process. Only 'Gaussian' is available now.
 - `eq_kernel`:  *string, default='RFM'* <br>
-  >The approach to constructing equivalent kernel. 'RFM' and 'Nystrom' are the degenerate approaches with random feature map and Nystrom method, respectively. 'Naive' is the naive approach.  
-- `eq_kernel_options`:  *dict, default={'cov_sampler': 'Sobol', 'n_cov': 2**11, 'n_dp': 500, 'n_rfm': 100}* <br>
+  >The approach to constructing equivalent kernel. Only 'RFM' is available now.  
+- `eq_kernel_options`:  *dict, default={'n_rfm':500}* <br>
   >The options for constructing equivalent kernel.
-  >* `'cov_sampler'`: The method for numerical integration. 'Sobol', 'Halton', and 'Lattice' are the quasi-Monte Carlo methods (see [qmcpy](https://pypi.org/project/qmcpy/)). 'Random' is the Monte-Carlo method.
-  >* `'n_cov'`: Number of samples for (quasi-)Monte Carlo integration.
-  >* `'n_dp'`: Number of data points used for the Nystrom approach to constructing equivalent kernel.
   >* `'n_rfm'`: Number of feature samples for the random feature map approach to constructing equivalent kernel.
   
 Fit APP with data:
 ```
-time = model.fit(d_spk, obs_region, cov_fun, set_par, display=True)
+time = model.fit(formula, df, set_par, display=True)
 ```
-- `d_spk`: *ndarray of shape (n_samples, dim_observation)* <br> 
+- `formula`: *ndarray of shape (n_samples, dim_observation)* <br> 
   >The point event data.
-- `obs_region`:  *ndarray of shape (dim_observation, 2)*  <br>
+- `df`:  *ndarray of shape (dim_observation, 2)*  <br>
   > The hyper-rectangular region of observation. For example, [[x0,x1],[y0,y1]] for two-dimensional region.  
 - `cov_fun`: *callable* <br> 
   >The covariate map "cov_fun(t) -> y", where t is a point in the obervation domain, and y is the covariate value at the point.  
