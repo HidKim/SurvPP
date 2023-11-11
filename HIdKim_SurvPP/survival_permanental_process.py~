@@ -3,6 +3,8 @@ from numpy.random import default_rng
 import sys, time, os
 import tensorflow as tf
 from scipy.stats import gamma
+import qmcpy as qp
+from scipy.interpolate import griddata
 import pandas as pd
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
@@ -67,7 +69,7 @@ class survival_permanental_process:
         # Check the existence of the specified options
         #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         set_kernel    = ['Gaussian']
-        set_eq_kernel = ['RFM']
+        set_eq_kernel = ['Naive','Nystrom','RFM']
 
         flag = False
         if kernel not in set_kernel:
@@ -83,7 +85,7 @@ class survival_permanental_process:
         
     # FIT MODEL TO DATA 
     ##########################################################
-    def fit(self, formula, df, set_par, lr=0.05, display=True, integral='Rectangle', id='id'):
+    def fit(self, formula, df, set_par, display=True, integral='Rectangle', id='id'):
         # df = [ID, start_time, stop_time, event, cov1, cov2,..]
 
         ok = False
@@ -136,7 +138,7 @@ class survival_permanental_process:
         # Optimization option for v
         #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
         m_rate = np.array(len(self.c_spk)/area, TYP)
-        lr_v = lr
+        lr_v = 10.0#50.0#0.05 * 1./np.sqrt(m_rate)
         eps_v = 1.e-5
         
         elapse_t1 = time.time()
@@ -161,6 +163,31 @@ class survival_permanental_process:
                 
         # Initial value of v
         #^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        """
+        rng = default_rng(0)
+        arr = np.arange(len(self.c_spk))
+        rng.shuffle(arr)
+        rough_rate_ = []
+        c_spk_batch = np.array_split(self.c_spk[arr],max(1,len(self.c_spk)//2000))
+        for c in c_spk_batch:
+            # Silverman's rule of thumb for scale hyper-parameter
+            sigma = np.std(c,0)
+            q75, q25 = np.quantile(c,.75,axis=0), np.quantile(c,.25,axis=0)
+            iqr = q75 - q25
+            b_width = 0.9 * np.minimum(sigma,iqr/1.34) * np.math.pow(len(c),-0.2)
+            #--------------------
+            b = 1./np.sqrt(2*b_width**2)
+            a = np.prod(np.sqrt(b**2/np.pi))
+            count = Gaussian_kernel(c,c,np.r_[a,b])
+            count = np.sum(count,0)
+            region = Gaussian_kernel(self.cov_sample,c,np.r_[a,b])
+            region = np.sum(region,0) + 1.e-5
+            rough_rate = count/(region*area/len(self.cov_sample)) * float(len(self.c_spk))/len(c)
+            rough_rate_ += list(rough_rate)
+        rough_rate = np.array(rough_rate_)[np.argsort(arr)]
+        init = 1./np.sqrt(rough_rate)
+        init_v = tf.constant(tf.expand_dims(init,1))
+        """
         init_v = 1./tf.sqrt(m_rate) * tf.cast(tf.ones([len(self.c_spk),1]),TYP)
         
         # Find the optimal hyper-parameter with grid search ^^^^^
@@ -303,6 +330,27 @@ class survival_permanental_process:
         est_map = scale * shape
         
         result = [gamma.ppf(ci,shape,scale=scale) for ci in conf_int]
+        return result
+
+    # GENERATE SAMPLE OF INTENSITY FUNCTION  
+    ##########################################################
+    def sample(self,t,n=1,seed=0):
+        t = np.array(t).astype(TYP)
+        t = t[:,np.newaxis] if len(t.shape) == 1 else t
+
+        min_t, max_t = np.min(t,0), np.max(t,0)
+        p = [np.linspace(mi,ma,100) for mi,ma in zip(min_t,max_t)]
+        z = np.meshgrid(*p)
+        z = np.array([np.ravel(x) for x in z]).T
+        cov_x = self.H.compute_covariance(z,trace=False)
+        mean_x = 2*self.H.dot(np.array(z),self.c_spk,self.est_v[:,np.newaxis])
+        mean_x = tf.squeeze(mean_x,1)
+        rng = default_rng(seed)
+        sample_x = rng.multivariate_normal(mean_x, cov_x, n)
+        sample_r = sample_x * sample_x
+        
+        result = [np.ravel(griddata(z, s, t, method='cubic')) for s in sample_r]
+                
         return result
     
     # GENERATE COVARIATE SAMPLES

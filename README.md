@@ -42,7 +42,7 @@ time = model.fit(formula, df, set_par, lr=0.05, display=True)
 - **Return**: *float* <br>
   >The execution time.
 
-Predict point process intensity as function of covariates:
+Predict hazard function on specified covariate values:
 ```
 r_est = model.predict(y, conf_int=[0.025,0.5,0.975])
 ```
