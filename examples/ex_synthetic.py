@@ -1,18 +1,27 @@
+# This is the script that reproduces our result on synthetic data
+# in (Kim, NeurIPS2023).
+
 from pylab import *
-import numpy as np
-import pandas as pd
 from sklearn.model_selection import KFold
 from sksurv.metrics import cumulative_dynamic_auc
-import dill
 import tensorflow as tf
 from HidKim_SurvPP import survival_permanental_process as SPP
+import dill
 
 def main():
+    # data type: ['linear', 'nonlinear']
+    ty = 'nonlinear'
+    # Num. of sub-regions for each individual: [1,5,10,20,50]
+    J = 5
+    # Evaluation points of performance: 0 ~ 1
+    score_t = [0.3, 0.5, 0.7, 0.9]
+    # Num. of cross validation
     n_split = 10
-    score_t = arange(0.2,1.0,0.1)
-    f_data = 'nonlinear_U1000_J20.dill'
-    data = dill.load(open('../data/synthetic/'+f_data,'rb'))
-
+    
+    # synthetic data you download from our github page 
+    f_data = ty+'_U1000_J'+str(J).zfill(2)+'.dill'
+    data = dill.load(open('data/synthetic/'+f_data,'rb'))
+    
     # DATA SPLITTING #################################
     df, cov_func = data['df'], data['func']
     kf = KFold(n_splits=n_split, shuffle=True, random_state=0)
@@ -21,7 +30,7 @@ def main():
         df_train.append(df[df['id'].isin(indx_train)])
         df_test.append(df[df['id'].isin(indx_test)])
 
-    # START ESTIMATION & PREDICTION ##################
+    # ESTIMATION & PREDICTION ########################
     score = {x:[] for x in ['auc','tll','cpu']}
     score['t'] = score_t
     for df_tr, df_te in zip(df_train,df_test):
@@ -29,9 +38,45 @@ def main():
         score['auc'].append(auc)
         score['tll'].append(tll)
         score['cpu'].append(cpu)
+    
+    # BOX PLOT of RESULT #############################
+    subplot(2,5,(1,4))
+    posit, lw = range(len(score_t)), 1.0
+    z = array(score['tll'])
+    bp = boxplot(z,positions=posit,widths=0.2,patch_artist=True,notch=False,
+                 boxprops={'facecolor':'r','linewidth':lw},
+                 flierprops={'markersize':4, 'markerfacecolor':'r'},
+                 medianprops={'color':'k','linewidth':lw},
+                 whiskerprops={'linewidth':lw,'linestyle':'--'},
+                 capprops={'linewidth':lw})
+    ylim([-0.6,0.2])
+    xticks(posit,[str(x) for x in score_t])
+    title('TLL: J_u = '+str(J))
 
-        
-    dill.dump(score, open('./result/'+f_data,'wb'))
+    subplot(2,5,(6,9))
+    posit, lw = range(len(score_t)), 1.0
+    z = array(score['auc'])
+    bp = boxplot(z,positions=posit,widths=0.2,patch_artist=True,notch=False,
+                 boxprops={'facecolor':'r','linewidth':lw},
+                 flierprops={'markersize':4, 'markerfacecolor':'r'},
+                 medianprops={'color':'k','linewidth':lw},
+                 whiskerprops={'linewidth':lw,'linestyle':'--'},
+                 capprops={'linewidth':lw})
+    ylim([0.1,1.0])
+    xticks(posit,[str(x) for x in score_t])
+    title('AUC: J_u = '+str(J))
+
+    subplot(2,5,(5,10))
+    errorbar(0, mean(score['cpu']), yerr=std(score['cpu']), capsize=5,
+             fmt='o', markersize=5, ecolor='r', markerfacecolor='r',
+             markeredgecolor='r')
+    xlim([-1,1])
+    ylim([1.e-4,60])
+    yscale('log')
+    title('CPU [sec]')
+    tight_layout()
+    show()
+    
 
 def estimation_spp(df_tr, df_te, score_t, cov_func):
     
@@ -50,9 +95,9 @@ def estimation_spp(df_tr, df_te, score_t, cov_func):
     with tf.device('/cpu:0'):
         set_par = [[1,x,x,x] for x in [0.1, 0.2, 0.5, 0.7, 1.0, 2.0, 5.0, 7.0, 10.0]]
         cpu = model.fit('Surv(t0,t1,event) ~ cov1 + cov2 + t1', df=df_tr, set_par=set_par)
+        cpu = cpu / len(set_par)
                 
-    # Calculate cumulative hazard function
-    # and performances
+    # Calculate cumulative hazard function and performances
     t = array(sorted(unique(list(linspace(0,1,1000))+\
                             list(surv_test[:,1])+list(score_t))))
     tt = 0.5*(t[1:]+t[:-1])
