@@ -25,7 +25,7 @@ model = SurvPP(kernel='Gaussian', eq_kernel='RFM', eq_kernel_options={'n_rfm':50
 - `eq_kernel_options`:  *dict, default={'n_rfm':500}* <br>
   >The options for constructing equivalent kernel. `'n_rfm'` specifies the number of feature samples for the random feature map approach to constructing equivalent kernel.
   
-Fit APP with data:
+Fit SurvPP with data:
 ```
 time = model.fit(formula, df, set_par, lr=0.05, display=True)
 ```
