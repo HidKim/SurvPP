@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="HidKim_SurvPP",
-    version="0.0.2",
+    version="0.0.1",
     author="Hideaki Kim",
     author_email="hideaki.kin@ntt.com",
     license="SOFTWARE LICENSE AGREEMENT FOR EVALUATION",
