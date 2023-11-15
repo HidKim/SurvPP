@@ -29,6 +29,8 @@ def main():
         score['auc'].append(auc)
         score['tll'].append(tll)
         score['cpu'].append(cpu)
+
+        
     dill.dump(score, open('./result/'+f_data,'wb'))
 
 def estimation_spp(df_tr, df_te, score_t, cov_func):
